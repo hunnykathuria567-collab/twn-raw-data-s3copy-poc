@@ -1,6 +1,7 @@
-name: TMW Historical Ingestion
-on: 
-  workflow_dispatch: # Manually trigger from GitHub UI
+name: TWN Historical Data Ingestion
+
+on:
+  workflow_dispatch: # Manual trigger button in GitHub Actions tab
 
 jobs:
   ingest_data:
@@ -9,18 +10,20 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.9'
 
-      - name: Install Dependencies
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
+      - name: Run High-Speed Ingestion Script
         run: |
-          pip install boto3 python-magic requests
-
-      - name: Execute Ingester
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "ap-south-1" # Mumbai Region
-        run: python ingester.py
+          # Install AWS CLI (usually pre-installed, but ensuring it's ready)
+          pip install boto3 
+          python twn_api_s3_copy_script.py
